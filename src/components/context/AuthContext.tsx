@@ -36,14 +36,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // for session cookie
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Login failed");
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid server response");
       }
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || "Login failed");
+      }
       setUser(data.user);
       setRole(data.user.role); // expects user.role in response
       localStorage.setItem("user", JSON.stringify(data.user));

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -19,6 +19,7 @@ const navigation = [
 export function Navbar() {
   const { openModal } = useAuthModal();
   const { role, user, logout } = useAuth();
+  const navigate = useNavigate();
   return (
     <header className="bg-gradient-to-r from-blue-50 via-white to-blue-50 border-b border-gray-100 sticky top-0 z-50 backdrop-blur-md">
       <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -63,7 +64,13 @@ export function Navbar() {
             {user ? (
               <>
                 <span className="text-gray-700 font-medium">Hi, {user.name || user.email}</span>
-                <Button variant="outline" onClick={logout} className="border-red-500 text-red-600 hover:bg-red-50">Logout</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => { logout(); navigate('/'); }}
+                  className="border-red-500 text-red-600 hover:bg-red-50"
+                >
+                  Logout
+                </Button>
               </>
             ) : (
               <>

@@ -23,7 +23,7 @@ export default function LoginCard() {
       password: '',
     },
   });
-  const { openModal, closeModal } = useAuthModal();
+  const { openModal, closeModal, intent } = useAuthModal();
   const { login, loading, error, role } = useAuth();
   const navigate = useNavigate();
 
@@ -31,8 +31,27 @@ export default function LoginCard() {
     const success = await login(values.email, values.password);
     if (success) {
       closeModal();
-      if (role === 'assistant') navigate('/dashboard/assistant');
-      else navigate('/dashboard/student');
+      if (intent === 'assistant') {
+      // Find first eligible year and semester
+      const storedUser = localStorage.getItem("user");
+      let academicYear = 1;
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.academic_year) academicYear = parsed.academic_year;
+        } catch {}
+      }
+      const eligibleYears = [1,2,3,4].filter(y => y < academicYear);
+      if (eligibleYears.length > 0) {
+        // Always use "Semester 1" as default
+        navigate(`/dashboard/assistant?year=${eligibleYears[0]}&semester=Semester%201`);
+      } else {
+        navigate('/dashboard/assistant'); // will show error message
+      }
+    }
+      else if (intent === 'user') navigate('/dashboard/user');
+      else if (role === 'assistant') navigate('/dashboard/assistant');
+      else navigate('/dashboard/user');
     }
   }
 

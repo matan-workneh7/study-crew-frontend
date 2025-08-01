@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/main-layout';
 import HomePage from '@/pages/home/page';
+import AssistantDashboard from '@/pages/dashboard/assistant';
 import AboutPage from '@/pages/about/page';
 import ContactPage from '@/pages/contact/page';
 import { AuthModalProvider } from '@/components/context/AuthModalContext';
@@ -15,6 +16,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/dashboard/assistant" element={<AssistantDashboard />} />
             {/* No direct login/register routes */}
           </Routes>
           <AuthModalRoot />

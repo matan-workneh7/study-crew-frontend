@@ -11,4 +11,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      '/login': 'http://localhost:3000',
+      '/courses': 'http://localhost:3000',
+      // add other API routes here as needed
+    }
+  }
 })

@@ -2,10 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/context/AuthContext';
+import { useAuthModal } from '@/components/context/AuthModalContext';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { role } = useAuth();
+  const { openModal } = useAuthModal();
 
   return (
     <div className="py-12">
@@ -24,7 +26,13 @@ export default function HomePage() {
               <CardDescription>Find help with your studies</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full py-6 text-lg border-blue-500 text-blue-600 hover:bg-blue-50">Get Help Now</Button>
+              <Button
+                variant="outline"
+                className="w-full py-6 text-lg border-blue-500 text-blue-600 hover:bg-blue-50"
+                onClick={() => openModal('login', 'user')}
+              >
+                Get Help Now
+              </Button>
             </CardContent>
           </Card>
 
@@ -46,8 +54,7 @@ export default function HomePage() {
               <Button
                 variant="outline"
                 className="w-full py-6 text-lg border-green-500 text-green-600 hover:bg-green-50"
-                onClick={() => navigate('/dashboard/assistant')}
-                disabled={role !== 'assistant'}
+                onClick={() => openModal('login', 'assistant')}
               >
                 Start Helping
               </Button>
