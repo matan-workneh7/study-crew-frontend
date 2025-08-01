@@ -8,6 +8,7 @@ import {
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { useAuthModal } from '@/components/context/AuthModalContext';
+import { useAuth } from '@/components/context/AuthContext';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -17,6 +18,7 @@ const navigation = [
 
 export function Navbar() {
   const { openModal } = useAuthModal();
+  const { role, user, logout } = useAuth();
   return (
     <header className="bg-gradient-to-r from-blue-50 via-white to-blue-50 border-b border-gray-100 sticky top-0 z-50 backdrop-blur-md">
       <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -36,16 +38,43 @@ export function Navbar() {
                   </Link>
                 </NavigationMenuItem>
               ))}
+              {role === 'assistant' && (
+                <NavigationMenuItem>
+                  <Link to="/dashboard/assistant">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Assistant Dashboard
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+              )}
+              {role === 'user' && (
+                <NavigationMenuItem>
+                  <Link to="/dashboard/student">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Student Dashboard
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+              )}
             </NavigationMenuList>
           </NavigationMenu>
 
           <div className="flex flex-1 items-center justify-end space-x-4">
-            <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50" onClick={() => openModal('login')}>
-              Sign in
-            </Button>
-            <Button onClick={() => openModal('register')}>
-              Sign up
-            </Button>
+            {user ? (
+              <>
+                <span className="text-gray-700 font-medium">Hi, {user.name || user.email}</span>
+                <Button variant="outline" onClick={logout} className="border-red-500 text-red-600 hover:bg-red-50">Logout</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50" onClick={() => openModal('login')}>
+                  Sign in
+                </Button>
+                <Button onClick={() => openModal('register')}>
+                  Sign up
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

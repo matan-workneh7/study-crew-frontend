@@ -7,6 +7,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Link } from 'react-router-dom';
 import { useAuthModal } from '@/components/context/AuthModalContext';
+import { useAuth } from '@/components/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -22,10 +24,16 @@ export default function LoginCard() {
     },
   });
   const { openModal, closeModal } = useAuthModal();
+  const { login, loading, error, role } = useAuth();
+  const navigate = useNavigate();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Handle login logic here
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const success = await login(values.email, values.password);
+    if (success) {
+      closeModal();
+      if (role === 'assistant') navigate('/dashboard/assistant');
+      else navigate('/dashboard/student');
+    }
   }
 
   return (
@@ -37,6 +45,7 @@ export default function LoginCard() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {error && <div className="text-red-500 text-center">{error}</div>}
             <FormField name="email" control={form.control} render={({ field }) => (
               <FormItem>
                 <FormLabel>Email</FormLabel>
@@ -55,7 +64,7 @@ export default function LoginCard() {
                 <FormMessage />
               </FormItem>
             )} />
-            <Button type="submit" className="w-full">Sign in</Button>
+            <Button type="submit" className="w-full" disabled={loading}>Sign in</Button>
           </form>
         </Form>
       </CardContent>

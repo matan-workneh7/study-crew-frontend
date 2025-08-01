@@ -1,7 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/components/context/AuthContext';
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const { role } = useAuth();
+
   return (
     <div className="py-12">
       <h1 className="text-3xl font-bold text-center mb-12">Welcome to StudyCrew</h1>
@@ -38,7 +43,12 @@ export default function HomePage() {
               <CardDescription>Help others with their studies</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full py-6 text-lg border-green-500 text-green-600 hover:bg-green-50">
+              <Button
+                variant="outline"
+                className="w-full py-6 text-lg border-green-500 text-green-600 hover:bg-green-50"
+                onClick={() => navigate('/dashboard/assistant')}
+                disabled={role !== 'assistant'}
+              >
                 Start Helping
               </Button>
             </CardContent>
