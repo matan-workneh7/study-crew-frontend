@@ -111,9 +111,7 @@ export default function UserDashboard() {
         <h2 className="text-2xl font-bold mb-4">
           Courses for {userEligibleYears.find(y => y.value === openYear)?.label} - {openSemester}
         </h2>
-        <div className="text-sm text-gray-500 mb-4">
-          Showing courses for {userEligibleYears.find(y => y.value === openYear)?.label}, {openSemester}
-        </div>
+
         
         {loading ? (
           <div className="text-center py-8">Loading courses...</div>
