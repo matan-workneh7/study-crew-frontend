@@ -14,8 +14,9 @@ const SEMESTERS = ["Semester 1", "Semester 2"];
 
 export default function UserDashboard() {
   const { user } = useAuth();
-  const { openModal } = useAuthModal();
   const academicYear = user?.academic_year ?? 1; // fallback to 1 if not logged in
+  // Filter years to show only up to user's current academic year
+  const userEligibleYears = YEARS.filter(y => y.value <= academicYear);
   
   // Read from URL
   const params = new URLSearchParams(window.location.search);
@@ -23,9 +24,9 @@ export default function UserDashboard() {
   const urlSemester = params.get('semester');
   
   const [openYear, setOpenYear] = useState<number | null>(
-    urlYear && YEARS.some(y => y.value === urlYear)
+    urlYear && userEligibleYears.some(y => y.value === urlYear)
       ? urlYear
-      : academicYear
+      : userEligibleYears.length > 0 ? userEligibleYears[0].value : null
   );
   
   const [openSemester, setOpenSemester] = useState<string>(
@@ -48,9 +49,10 @@ export default function UserDashboard() {
     params.set('semester', openSemester);
     window.history.pushState({}, '', `${window.location.pathname}?${params}`);
     
-    // Fetch courses
+    // Fetch courses for the selected year and semester
     setLoading(true);
     setError(null);
+    
     fetch(`/courses?year=${openYear}&semester=${encodeURIComponent(openSemester)}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch courses");
@@ -74,7 +76,7 @@ export default function UserDashboard() {
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-white p-6 flex flex-col gap-4">
-        {YEARS.map((year) => (
+        {userEligibleYears.map((year) => (
           <div key={year.value}>
             <button
               className={`w-full text-left font-semibold py-2 px-3 rounded hover:bg-blue-50 transition ${
@@ -107,8 +109,11 @@ export default function UserDashboard() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col p-8 gap-6 relative">
         <h2 className="text-2xl font-bold mb-4">
-          Courses for {YEARS.find(y => y.value === openYear)?.label} - {openSemester}
+          Courses for {userEligibleYears.find(y => y.value === openYear)?.label} - {openSemester}
         </h2>
+        <div className="text-sm text-gray-500 mb-4">
+          Showing courses for {userEligibleYears.find(y => y.value === openYear)?.label}, {openSemester}
+        </div>
         
         {loading ? (
           <div className="text-center py-8">Loading courses...</div>
@@ -137,32 +142,37 @@ export default function UserDashboard() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {courses.map((course) => (
-                        <tr 
-                          key={course.code}
-                          className="hover:bg-gray-50 cursor-pointer"
-                          onClick={() => toggleCourse(course.code)}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <input
-                              type="checkbox"
-                              checked={selectedCourses.has(course.code)}
-                              onChange={() => toggleCourse(course.code)}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {course.code}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {course.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {course.credits || 3}
-                          </td>
-                        </tr>
-                      ))}
+                      {!loading && !error && courses
+                        .filter(course =>
+                          course.year === YEARS.find(y => y.value === openYear)?.label &&
+                          course.semester === (SEMESTERS.indexOf(openSemester) + 1)
+                        )
+                        .map((course) => (
+                          <tr 
+                            key={course.code}
+                            className="hover:bg-gray-50 cursor-pointer"
+                            onClick={() => toggleCourse(course.code)}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={selectedCourses.has(course.code)}
+                                onChange={() => toggleCourse(course.code)}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {course.code}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {course.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {course.credits || 3}
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
