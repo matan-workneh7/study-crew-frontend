@@ -50,9 +50,9 @@ export function Navbar() {
               )}
               {role === 'user' && (
                 <NavigationMenuItem>
-                  <Link to="/dashboard/student">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Student Dashboard
+                  <Link to="/dashboard/user">
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      User Dashboard
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
