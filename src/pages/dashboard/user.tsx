@@ -35,10 +35,16 @@ export default function UserDashboard() {
       : SEMESTERS[0]
   );
   
-  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Function to handle card click (will be used for navigation)
+  const handleCourseClick = (courseCode: string) => {
+    console.log('Navigating to course:', courseCode);
+    // TODO: Add navigation to course details page
+    // navigate(`/courses/${courseCode}`);
+  };
 
   useEffect(() => {
     if (!openYear || !openSemester) return;
@@ -63,51 +69,55 @@ export default function UserDashboard() {
       .finally(() => setLoading(false));
   }, [openYear, openSemester]);
 
-  const toggleCourse = (code: string) => {
-    setSelectedCourses((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
-      return next;
-    });
+  const handleSubmit = () => {
+    // This can be used for form submission if needed
+    console.log('Form submitted');
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 border-r bg-white p-6 flex flex-col gap-4">
-        {userEligibleYears.map((year) => (
-          <div key={year.value}>
-            <button
-              className={`w-full text-left font-semibold py-2 px-3 rounded hover:bg-blue-50 transition ${
-                openYear === year.value ? 'bg-blue-100 text-blue-700' : ''
-              }`}
-              onClick={() => setOpenYear(openYear === year.value ? null : year.value)}
-            >
-              {year.label}
-            </button>
-            {/* Semesters Toggle */}
-            {openYear === year.value && (
-              <div className="ml-4 mt-2 flex flex-col gap-1">
-                {SEMESTERS.map((sem) => (
-                  <button
-                    key={sem}
-                    className={`text-sm py-1 px-2 rounded hover:bg-blue-50 transition ${
-                      openSemester === sem ? 'bg-blue-200 text-blue-800' : ''
-                    }`}
-                    onClick={() => setOpenSemester(sem)}
-                  >
-                    {sem}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Fixed Sidebar */}
+      <aside className="w-64 bg-white border-r p-6 space-y-4 flex-shrink-0 overflow-y-auto">
+        {userEligibleYears.length === 0 ? (
+          <div className="text-gray-500">No years available</div>
+        ) : (
+          userEligibleYears.map((year) => (
+            <div key={year.value} className="space-y-2">
+              <button
+                onClick={() => setOpenYear(year.value)}
+                className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
+                  openYear === year.value
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {year.label}
+              </button>
+              {openYear === year.value && (
+                <div className="ml-4 space-y-1">
+                  {SEMESTERS.map((sem) => (
+                    <button
+                      key={sem}
+                      onClick={() => setOpenSemester(sem)}
+                      className={`w-full text-left px-4 py-1.5 text-sm rounded-md transition-colors ${
+                        openSemester === sem
+                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {sem}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </aside>
       
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col p-8 gap-6 relative">
+      {/* Scrollable Main Content */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="p-8 overflow-y-auto h-full">
         <h2 className="text-2xl font-bold mb-4">
           Courses for {userEligibleYears.find(y => y.value === openYear)?.label} - {openSemester}
         </h2>
@@ -120,61 +130,35 @@ export default function UserDashboard() {
         ) : (
           <div className="space-y-4">
             {courses.length > 0 ? (
-              <Card>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Select
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Course Code
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Course Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Credits
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {!loading && !error && courses
-                        .filter(course =>
-                          course.year === YEARS.find(y => y.value === openYear)?.label &&
-                          course.semester === (SEMESTERS.indexOf(openSemester) + 1)
-                        )
-                        .map((course) => (
-                          <tr 
-                            key={course.code}
-                            className="hover:bg-gray-50 cursor-pointer"
-                            onClick={() => toggleCourse(course.code)}
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <input
-                                type="checkbox"
-                                checked={selectedCourses.has(course.code)}
-                                onChange={() => toggleCourse(course.code)}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {course.code}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {course.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {course.credits || 3}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
+              <div className="space-y-4">
+                {!loading && !error && courses
+                  .filter(course =>
+                    course.year === YEARS.find(y => y.value === openYear)?.label &&
+                    course.semester === (SEMESTERS.indexOf(openSemester) + 1)
+                  )
+                  .map((course) => (
+                    <Card 
+                      key={course.code}
+                      className="p-6 cursor-pointer transition-all hover:shadow-md hover:border-blue-300"
+                      onClick={() => handleCourseClick(course.code)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{course.name}</h3>
+                          <p className="text-sm text-gray-500 mt-1">{course.code}</p>
+                        </div>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          {course.credits || 3} Credits
+                        </span>
+                      </div>
+                      {course.description && (
+                        <p className="mt-3 text-sm text-gray-600 line-clamp-2">
+                          {course.description}
+                        </p>
+                      )}
+                    </Card>
+                  ))}
+              </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
                 No courses found for {YEARS.find(y => y.value === openYear)?.label} - {openSemester}
@@ -182,6 +166,7 @@ export default function UserDashboard() {
             )}
           </div>
         )}
+        </div>
       </main>
     </div>
   );
